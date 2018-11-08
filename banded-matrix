@@ -1,0 +1,183 @@
+/**
+ Carlos Castillo
+ description: solves a banded matrix using gaussian elimination with 4 "bands" and also allows a user to enter
+ their own n x n matrix
+ created: 10.20.18
+ status: completed
+**/
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <iomanip>
+using namespace std;
+
+void printMatrix(vector<double> row){
+    for(size_t i = 0; i < row.size(); i++)      // printing out how many elements in a given row
+        (i != (row.size() - 1)) ? cout << row[i] << " " : cout << "| " << row[i];      // condition is to be able to have the "|" appear before the last number....
+    cout << endl;
+}
+
+void printRow(vector<double> row){
+    for(size_t i = 1; i < row.size(); i++)      // printing out how many elements in a given row
+        cout << fixed << setprecision(3) << row[i] << " ";
+    cout << endl;
+}
+
+int main()
+{
+    vector<double> row1 = {6 ,3 ,0 ,0 ,0, 3};
+    vector<double> row2 = {2, 6, 3, 0, 0, 2};
+    vector<double> row3 = {1, 2, 6, 3, 0, 5};
+    vector<double> row4 = {0, 1, 2, 6, 3, 0};
+    vector<double> row5 = {0, 0, 1, 2, 6, 16};
+
+    cout << "Here is the matrix...\n";
+    printMatrix(row1);
+    printMatrix(row2);
+    printMatrix(row3);
+    printMatrix(row4);
+    printMatrix(row5);
+    cout << "\nThe final matrix should look like this...\n";
+
+    vector<double> row1F = {6, 3, 0, 0, 0, 3};
+    vector<double> row2F = {0, 5, 3, 0, 0, 1};
+    vector<double> row3F = {0, 0, 5.1, 3, 0, 4.2};
+    vector<double> row4F = {0, 0, 0, 5.176, 3, -1.353};
+    vector<double> row5F = {0, 0, 0, 0, 5.182, 15.545};
+
+    printMatrix(row1F);
+    printMatrix(row2F);
+    printMatrix(row3F);
+    printMatrix(row4F);
+    printMatrix(row5F);
+    cout << endl;
+
+    /// what the given matrix looks like versus how it is held in vectors
+    // 6 3 0 0 0 | 3           a1 b1 0  0  0  | y1
+    // 2 6 3 0 0 | 2           c2 a2 b2 0  0  | y2
+    // 1 2 6 3 0 | 5           d3 c3 a3 b3 0  | y3
+    // 0 1 2 6 3 | 0           0  d4 c4 a4 b4 | y4
+    // 0 0 1 2 6 | 16          0  0  d5 c5 a5 | y5
+
+    // technically there are 5 rows
+    int totalRows = 4;
+
+    vector<double> b = {0, 3, 3, 3, 3};        // diagonal row b, needs to be indexed 1-(n-1)
+    vector<double> a = {0, 6, 6, 6, 6, 6};     // diagonal row a, needs to be indexed 1-n
+    vector<double> c = {0, 0, 2, 2, 2, 2};     // diagonal row c, needs to be indexed 2-n
+    vector<double> d = {0, 0, 0, 1, 1, 1};     // diagonal row d, needs to be indexed 3-n
+
+    vector<double> y = {0, 3, 2, 5, 0, 16};
+
+    double m = 0;       // m will be the number that multiplies an element in a specific position in the matrix to get 0's in certain columns
+    int j = 2;       // will look at the "first" element in vector c (increment by one to get the first element in the next row)
+
+    /// try handling this row by row... also you don't need to change the b column since it doesn't change at all
+    /// since there are 4 vectors, you need to loop 4 times but each time your working with 2 rows per loop (specifically rows c and d)
+    /// ...(4*2)-1 since last row only needs to be worked on once
+    for(int i = 1; i <= totalRows; i++){
+        // works on the row starting with c
+        m = (c[j]/a[i]);
+        m *= -1;        // turning the multiplier negative
+        c[j] += (a[i]*m);
+        a[j] += (b[i]*m);
+        y[j] += (y[i]*m);
+
+        // checks to make sure you don't iterate over something that doesn't exist
+        if(j <= totalRows){
+            // works on the row starting with d
+            m = (d[j+1]/a[i]);
+            m *= -1;        // turning the multiplier negative
+            d[j+1] += (a[i]*m);
+            c[j+1] += (b[i]*m);
+            y[j+1] += (y[i]*m);
+
+            ++j;
+        }
+        else continue;
+    }
+
+    cout << "\nHere is the final answer!\n";
+    cout << "Vector [b]: "; printRow(b);
+    cout << "Vector [a]: "; printRow(a);
+    cout << "Vector [c]: "; printRow(c);
+    cout << "Vector [d]: "; printRow(d);
+    cout << "Vector [y]: "; printRow(y);
+    cout << endl;
+
+    /// creating vectors to allow the user to input their own matrix
+    vector<double> myB{0};
+    vector<double> myA{0};
+    vector<double> myC{0, 0};
+    vector<double> myD{0, 0, 0};
+    vector<double> myY{0};
+
+    int n;
+    int number;
+    cout << "Now its your turn!\n";
+    cout << "What kind of n x n matrix would you like?: ";
+    cin >> n;
+    cout << "You've opted for a: [" << n << " x " << n << "] matrix!\n";
+
+    cout << "\nWhat number would you like to go into vector[b]?: ";
+    cin >> number;
+    for(size_t i = 1; i <= (n-1); i++){
+        myB.push_back(number);
+    }
+
+    cout << "What number would you like to go into vector[a]?: ";
+    cin >> number;
+    for(size_t i = 1; i <= n; i++){
+        myA.push_back(number);
+    }
+
+    cout << "What number would you like to go into vector[c]?: ";
+    cin >> number;
+    for(size_t i = 2; i <= n; i++){
+        myC.push_back(number);
+    }
+
+    cout << "What number would you like to go into vector[d]?: ";
+    cin >> number;
+    for(size_t i = 3; i <= n; i++){
+        myD.push_back(number);
+    }
+
+    cout << "What numbers would you like to go into vector[y]?\n";
+    for(size_t i = 1; i <= n; i++){
+        cout << "y[" << i << "] = ";
+        cin >> number;
+        myY.push_back(number);
+    }
+
+    j = 2;      // reset j to 2
+    for(int i = 1; i <= totalRows; i++){
+        // works on the row starting with c
+        m = (myC[j]/myA[i]);
+        m *= -1;        // turning the multiplier negative
+        myC[j] += (myA[i]*m);
+        myA[j] += (myB[i]*m);
+        myY[j] += (myY[i]*m);
+
+        // checks to make sure you don't iterate over something that doesn't exist
+        if( j <= totalRows){
+            // works on the row starting with d
+            m = (myD[j+1]/myA[i]);
+            m *= -1;        // turning the multiplier negative
+            myD[j+1] += (myA[i]*m);
+            myC[j+1] += (myB[i]*m);
+            myY[j+1] += (myY[i]*m);
+
+            ++j;
+        }
+        else continue;
+    }
+
+    cout << "\nHere is the final answer!\n";
+    cout << "Vector [b]: "; printRow(myB);
+    cout << "Vector [a]: "; printRow(myA);
+    cout << "Vector [c]: "; printRow(myC);
+    cout << "Vector [d]: "; printRow(myD);
+    cout << "Vector [y]: "; printRow(myY);
+    cout << endl;
+}
