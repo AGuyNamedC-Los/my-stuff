@@ -1,0 +1,116 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <vector>
+#include <cstring>
+
+using namespace std;
+
+/// will check for matches with the current given input from argv and compare it to a particular...
+/// ... vector "legend" and if any matches occur will be placed in a particular token vector
+void checkForMatches(vector<string> & currVector, string currText, vector<string> & tokenVect, string tokenType){
+    for(int i = 0; i < currVector.size(); i++){
+        if(currVector[i] == currText){
+            tokenVect.push_back(currText);
+        }
+    }
+}
+
+/// shows what was in any given token vector
+void printResults(vector<string> & currVect, string tokenType){
+    cout << tokenType << "[" << currVect.size() << "] -> ";
+    for(string item : currVect){
+        cout << item << " ";
+    }
+    cout << endl;
+}
+
+
+/// will help the printNoDuplicate function by comparing the noDups vector with an item from the token vector and
+/// return true or false depending if there was a match between the two
+bool isDuplicate(vector<string> & noDups, string currItem){
+    for(int i = 0; i < noDups.size(); i++){
+        if(noDups[i] == currItem)
+            return true;
+    }
+     return false;
+}
+
+/// will help the printNoDuplicate function count how many duplicates were found for a given item in a token vector
+int countDups(vector<string> & source, string item){
+    int duplicates = 0;
+    for(int i = 0; i < source.size(); i++){
+        if(source[i] == item)
+            duplicates++;
+    }
+    return duplicates;
+}
+
+
+/// will print out a vector with no duplicates from any given token vector and also show how many times
+/// that item appeared in the token vector
+void printNumOfDups(vector<string> & currVect, string tokenType){
+    vector<string>* noDups = new vector<string>;        // creating a vector to hold no duplicate values
+
+    for(int i = 0; i < currVect.size(); i++){       // looping through any particular token vector
+        if(!isDuplicate(*noDups, currVect[i]))      // if the noDups vector and the token vector have no matching values, add it to noDups vector
+            noDups->push_back(currVect[i]);
+    }
+
+    cout << tokenType << " duplicates -> ";
+    for(int i = 0; i < noDups->size(); i++){        // using noDups vector, begin to print out the non duplicate elements...
+        cout << (*noDups)[i] << "[" << countDups(currVect, (*noDups)[i]) << "] ";       // ... and how many times they appeared
+    }
+    cout << endl;
+}
+
+int main(int argc, char** argv)
+{
+    vector<string> keywords = {"if", "else", "end", "public", "private", "while", "do", "for", "break", "continue"};
+    vector<string> letters = {"a", "b", "c", "d", "e" , "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v","w", "x", "y", "z"};
+    vector<string> digits = {"0","1","2","3","4","5","6","7","8","9"};
+    vector<string> special = {"!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "[", "]", "+", "-", "/", "."};
+    vector<string> relationalOps = {"<", ">", "<=", ">=", "==", "!="};
+    vector<string> keywordTokens, letterTokens, digitTokens, specialTokens, relationalTokens;
+
+    if(argc < 2){
+        cout << "Nothing was inputed!";
+        cout << "\nNow exiting...";
+        return 0;
+    }
+
+    ifstream fin;
+    string testFileTxt;
+    fin.open(argv[1]);      // should be "testFile.txt"
+    if(fin.is_open()){
+        cout << "File opened successfully!\n\n";
+    } else{
+        cout << "I couldn't open the file!";
+        return 0;
+    }
+    //cout << ((fin.is_open()) ? "File Opened!\n\n" : "The file cannot be opened!\n");
+
+    while(fin >> testFileTxt) {
+        checkForMatches(keywords, testFileTxt, keywordTokens, "keywords");
+        checkForMatches(letters, testFileTxt, letterTokens, "letters");
+        checkForMatches(digits, testFileTxt, digitTokens, "digits");
+        checkForMatches(special, testFileTxt, specialTokens, "special");
+        checkForMatches(relationalOps, testFileTxt, relationalTokens, "relational");
+    }
+
+    printResults(keywordTokens, "keyword");
+    printNumOfDups(keywordTokens, "keyword");
+
+    printResults(letterTokens, "letter");
+    printNumOfDups(letterTokens, "letter");
+
+    printResults(digitTokens, "digit");
+    printNumOfDups(digitTokens, "digit");
+
+    printResults(specialTokens, "special");
+    printNumOfDups(specialTokens, "special");
+
+    printResults(relationalTokens, "relational");
+    printNumOfDups(relationalTokens, "relational");
+}
